@@ -70,14 +70,14 @@ func Parse(r io.Reader, h ParseHandler, parseBinlogPos bool) error {
 			if m := oneGtidExp.FindAllStringSubmatch(line, -1); len(m) == 1 {
 				gset := m[0][1]
 				if err := h.UpdateGtidFromPurged(gset); err != nil {
-					errors.Trace(err)
+					return errors.Trace(err)
 				}
 				gtidDoneParsed = true
 			}
 			if m := mutilGtidStartExp.FindAllStringSubmatch(line, -1); len(m) == 1 {
 				gset := m[0][1]
 				if err := h.UpdateGtidFromPurged(gset); err != nil {
-					errors.Trace(err)
+					return errors.Trace(err)
 				}
 				mutilGtidParsed = true
 			}
@@ -86,7 +86,7 @@ func Parse(r io.Reader, h ParseHandler, parseBinlogPos bool) error {
 				if m := midUuidSet.FindAllStringSubmatch(line, -1); len(m) == 1 {
 					gset := m[0][1]
 					if err := h.UpdateGtidFromPurged(gset); err != nil {
-						errors.Trace(err)
+						return errors.Trace(err)
 					}
 
 				}
@@ -94,7 +94,7 @@ func Parse(r io.Reader, h ParseHandler, parseBinlogPos bool) error {
 				if m := endUuidSet.FindAllStringSubmatch(line, -1); len(m) == 1 {
 					gset := m[0][1]
 					if err := h.UpdateGtidFromPurged(gset); err != nil {
-						errors.Trace(err)
+						return errors.Trace(err)
 					}
 					gtidDoneParsed = true
 				}
@@ -107,11 +107,11 @@ func Parse(r io.Reader, h ParseHandler, parseBinlogPos bool) error {
 				name := m[0][1]
 				pos, err := strconv.ParseUint(m[0][2], 10, 64)
 				if err != nil {
-					errors.Errorf("parse binlog %v err, invalid number", line)
+					return errors.Errorf("parse binlog %v err, invalid number", line)
 				}
 
 				if err = h.BinLog(name, pos); err != nil && err != ErrSkip {
-					errors.Trace(err)
+					return errors.Trace(err)
 				}
 
 				binlogParsed = true

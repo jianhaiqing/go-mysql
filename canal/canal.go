@@ -129,7 +129,7 @@ func (c *Canal) validateSetGtidPurged() error {
 		if err != nil {
 			return errors.Trace(err)
 		} else if f, _ := res.GetString(0, 1); f != "ON" {
-			return errors.Errorf("set-gtid-purged: %s, gtid_mode should be ON %s, but now is ", c.cfg.Dump.GtidPurged, f)
+			return errors.Errorf("set-gtid-purged: %s, gtid_mode should be ON, but now is %s", c.cfg.Dump.GtidPurged, f)
 		}
 		return nil
 	}
