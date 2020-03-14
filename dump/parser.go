@@ -33,22 +33,24 @@ var valuesExp *regexp.Regexp
 var gtidExp *regexp.Regexp
 
 func init() {
-	//SET @@GLOBAL.GTID_PURGED='1638041a-0457-11e9-bb9f-00505690b730:1-429405150';
-	oneGtidExp = regexp.MustCompile("SET @@GLOBAL.GTID_PURGED='(.+)'")
+	gtidStr := "\\w{8}(-\\w{4}){3}-\\w{12}:\\d+-\\d+"
+	// SET @@GLOBAL.GTID_PURGED='1638041a-0457-11e9-bb9f-00505690b730:1-429405150';
+	// SET @@GLOBAL.GTID_PURGED=/*!80000 '+'*/ '0ee3f74b-7948-ee16-798a-888edd77f60a:1-1921793'; -- mysql8 dump output
+	oneGtidExp = regexp.MustCompile(fmt.Sprintf("SET @@GLOBAL.GTID_PURGED=.*'(%s)'", gtidStr))
 
 	//SET @@GLOBAL.GTID_PURGED='071a84e8-b253-11e8-8472-005056a27e86:1-76,	// start of multi-gtid set
 	//2337be48-0456-11e9-bd1c-00505690543b:1-7,								// middle gtid set
 	//41d816cd-0455-11e9-be42-005056901a22:1-2';   							// end gtid set
-	mutilGtidStartExp = regexp.MustCompile("SET @@GLOBAL.GTID_PURGED='(.+),")
-	midUuidSet = regexp.MustCompile("(^\\w{8}(-\\w{4}){3}-\\w{12}:\\d+-\\d+),")
-	endUuidSet = regexp.MustCompile("(^\\w{8}(-\\w{4}){3}-\\w{12}:\\d+-\\d+)'")
+	mutilGtidStartExp = regexp.MustCompile(fmt.Sprintf("SET @@GLOBAL.GTID_PURGED=.*'(%s),'", gtidStr))
+	midUuidSet = regexp.MustCompile(fmt.Sprintf("(^%s)',", gtidStr))
+	endUuidSet = regexp.MustCompile(fmt.Sprintf("(^%s)'", gtidStr))
 
 	binlogExp = regexp.MustCompile("^CHANGE MASTER TO MASTER_LOG_FILE='(.+)', MASTER_LOG_POS=(\\d+);")
 	useExp = regexp.MustCompile("^USE `(.+)`;")
 	valuesExp = regexp.MustCompile("^INSERT INTO `(.+?)` VALUES \\((.+)\\);$")
 	// The pattern will only match MySQL GTID, as you know SET GLOBAL gtid_slave_pos='0-1-4' is used for MariaDB.
 	//SET @@GLOBAL.GTID_PURGED='1638041a-0457-11e9-bb9f-00505690b730:1-429405150';
-	gtidExp = regexp.MustCompile("(\\w{8}(-\\w{4}){3}-\\w{12}:\\d+-\\d+)")
+	gtidExp = regexp.MustCompile(fmt.Sprintf("(%s)", gtidStr))
 }
 
 // ParseGtidSetFromMysqlDump: Parsing Gtid from mysqldump output,
